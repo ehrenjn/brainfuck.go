@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"errors"
+	"bufio"
 )
 
 var tape []int
@@ -11,6 +12,7 @@ var loopLocs []int
 var currentByte int
 var pointer int
 var code []byte
+var mode string
 
 func printErr(err error) {
 	fmt.Println()
@@ -24,22 +26,23 @@ func handleErr(err error) {
 	}
 }
 
-func getCode() []byte {
-	fileLoc := "frick.brain"
-	if len(os.Args) >= 2 {
-		fileLoc = os.Args[1]
-	} else {
-		fmt.Println("WARNING: Incorrect number of arguments, only takes up to 2 arguments (the location of the file to interpret followed by a -s if output should be a string)")
-		fmt.Println("Attempting to interpret " + fileLoc)
+func getCode() ([]byte, string) {
+	if len(os.Args) >= 2 { //file input
+		fileLoc := os.Args[1]
+		f, err := os.Open(fileLoc)
+		handleErr(err)
+		stats, err := f.Stat()
+		handleErr(err)
+		buffer := make([]byte, stats.Size()) //gets size of file
+		f.Read(buffer)
+		f.Close()
+		return buffer, "file"
+	} else { //command line input
+		scanner := bufio.NewScanner(os.Stdin)
+		fmt.Print("\n>>> ")
+		scanner.Scan(); //get input
+		return []byte(scanner.Text()), "loop"
 	}
-	f, err := os.Open(fileLoc)
-	handleErr(err)
-	stats, err := f.Stat()
-	handleErr(err)
-	buffer := make([]byte, stats.Size()) //gets size of file
-	f.Read(buffer)
-	f.Close()
-	return buffer
 }
 
 func movePointer(i int) {
@@ -133,13 +136,17 @@ func interpretSymbol(s string) {
 
 func main() {
 	tape = []int{0}
-	currentByte = 0
 	pointer = 0
+	mode = "loop"
 
-	code = getCode()
-	for currentByte < len(code) {
-		chr := string(code[currentByte])
-		interpretSymbol(chr)
-		currentByte ++
+	for mode == "loop" {
+		//loopLocs = []int{} //reset loopLocs
+		currentByte = 0 //reset currentByte
+		code, mode = getCode()
+		for currentByte < len(code) {
+			chr := string(code[currentByte])
+			interpretSymbol(chr)
+			currentByte ++
+		}
 	}
 }
