@@ -1,5 +1,6 @@
 # brainfuck.go
-A basic brainfuck interpreter written in Go
+A basic brainfuck interpreter written in Go  
+Brainfuck is a classic esoteric programming language, designed to be difficult to use. To find out more visit https://esolangs.org/wiki/Brainfuck  
 
 ## Usage
 First, compile brainfuck.go  
